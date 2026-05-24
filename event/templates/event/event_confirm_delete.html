@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Event</title>
+    <style>
+        :root {
+            --bg: #f7efe7;
+            --panel: #fffaf3;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e7d8c6;
+            --danger: #b91c1c;
+            --danger-dark: #991b1b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: linear-gradient(135deg, #fdf6ee 0%, #f1dfcf 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 48px 20px 64px;
+        }
+
+        .card {
+            background: rgba(255, 250, 243, 0.98);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: 0 22px 50px rgba(73, 44, 17, 0.10);
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin: 0 0 12px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1;
+        }
+
+        p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .event {
+            margin: 20px 0 26px;
+            padding: 18px;
+            border-radius: 20px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+        }
+
+        .event h2 {
+            margin: 0 0 8px;
+            font-size: 1.25rem;
+            color: var(--text);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid var(--danger);
+            color: white;
+            background: var(--danger);
+            cursor: pointer;
+        }
+
+        .button:hover,
+        .button:focus {
+            background: var(--danger-dark);
+            border-color: var(--danger-dark);
+        }
+
+        .button.secondary {
+            color: var(--danger);
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="card">
+            <p class="eyebrow">Delete event</p>
+            <h1>Remove this event?</h1>
+            <p>This action cannot be undone. The event will be permanently deleted.</p>
+
+            <div class="event">
+                <h2>{{ object.title }}</h2>
+                <p>{{ object.date|date:"M d, Y · H:i" }}</p>
+                <p>{{ object.location }}</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="actions">
+                    <button class="button" type="submit">Yes, delete it</button>
+                    <a class="button secondary" href="{% url 'event:event_detail' object.pk %}">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

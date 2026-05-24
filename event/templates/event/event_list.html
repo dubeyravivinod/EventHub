@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f5efe6;
+            --panel: #fffaf2;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5d9c8;
+            --accent: #c2410c;
+            --accent-dark: #9a3412;
+            --success: #0f766e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: linear-gradient(135deg, #f7f0e6 0%, #f2e5d7 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 20px 64px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            font-size: 0.8rem;
+            margin: 0 0 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 4rem);
+            line-height: 0.95;
+        }
+
+        .lead {
+            margin: 12px 0 0;
+            color: var(--muted);
+            max-width: 58ch;
+            font-size: 1.02rem;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 999px;
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 12px 18px;
+            box-shadow: 0 10px 30px rgba(194, 65, 12, 0.16);
+        }
+
+        .button:hover {
+            background: var(--accent-dark);
+            border-color: var(--accent-dark);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+            margin-top: 28px;
+        }
+
+        .card {
+            background: rgba(255, 250, 242, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 18px 45px rgba(60, 41, 16, 0.08);
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: #f3e8d8;
+            color: #7c2d12;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .pill.status-upcoming { background: #d1fae5; color: #065f46; }
+        .pill.status-ongoing { background: #dbeafe; color: #1d4ed8; }
+        .pill.status-cancelled { background: #fee2e2; color: #b91c1c; }
+        .pill.status-completed { background: #e5e7eb; color: #374151; }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 1.35rem;
+        }
+
+        .card p {
+            margin: 0 0 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .link {
+            color: var(--accent-dark);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .empty {
+            margin-top: 28px;
+            background: var(--panel);
+            border: 1px dashed var(--border);
+            border-radius: 24px;
+            padding: 34px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        @media (max-width: 720px) {
+            .hero {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <nav style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:18px">
+            {% if request.user.is_authenticated %}
+                <span style="align-self:center;color:var(--text)">Hi, <a class="link" href="{% url 'user:profile' %}">{{ request.user.get_full_name|default:request.user.username }}</a></span>
+                <a class="button" href="{% url 'user:logout' %}">Logout</a>
+            {% else %}
+                <a class="button" href="{% url 'user:login' %}">Login</a>
+                <a class="button" href="{% url 'user:register' %}">Register</a>
+            {% endif %}
+        </nav>
+
+        <section class="hero">
+            <div>
+                <p class="eyebrow">EventHub</p>
+                <h1>Events</h1>
+                <p class="lead">Browse upcoming sessions, track ongoing activity, and manage the full event lifecycle from one place.</p>
+            </div>
+            {% if request.user.is_authenticated %}
+                <a class="button" href="{% url 'event:event_create' %}">Create Event</a>
+            {% else %}
+                <span class="button" style="opacity:0.5;cursor:not-allowed;">Create Event</span>
+            {% endif %}
+        </section>
+
+        {% if events %}
+            <section class="grid">
+                {% for event in events %}
+                    <article class="card">
+                        <div class="meta">
+                            <span class="pill">{{ event.date|date:"M d, Y" }}</span>
+                            <span class="pill status-{{ event.status }}">{{ event.get_status_display }}</span>
+                        </div>
+                        <h2>{{ event.title }}</h2>
+                        <p>{{ event.description|truncatewords:24 }}</p>
+                        <p><strong>Location:</strong> {{ event.location }}</p>
+                        <div class="actions">
+                            <a class="link" href="{% url 'event:event_detail' event.pk %}">View details</a>
+                            <a class="link" href="{% url 'event:event_update' event.pk %}">Edit</a>
+                            <a class="link" href="{% url 'event:event_delete' event.pk %}">Delete</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <div class="empty">
+                <h2>No events yet</h2>
+                <p>Create the first event to get started.</p>
+                {% if request.user.is_authenticated %}
+                    <a class="button" href="{% url 'event:event_create' %}">Add an event</a>
+                {% else %}
+                    <a class="button" href="{% url 'user:login' %}">Login to add an event</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>

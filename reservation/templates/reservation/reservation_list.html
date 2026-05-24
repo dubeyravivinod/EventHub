@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations</title>
+    <style>
+        :root {
+            --bg: #f4efe8;
+            --panel: #fffaf3;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e7d8c6;
+            --accent: #0f766e;
+            --accent-dark: #115e59;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: linear-gradient(135deg, #f8f2ea 0%, #efe2d4 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 20px 64px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            font-size: 0.8rem;
+            margin: 0 0 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 4rem);
+            line-height: 0.95;
+        }
+
+        .lead {
+            margin: 12px 0 0;
+            color: var(--muted);
+            max-width: 60ch;
+            font-size: 1.02rem;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 12px 18px;
+            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.16);
+        }
+
+        .button:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-top: 28px;
+        }
+
+        .card {
+            background: rgba(255, 250, 243, 0.94);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 18px 45px rgba(60, 41, 16, 0.08);
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: #e6fffb;
+            color: #115e59;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .pill.status-pending { background: #fef3c7; color: #92400e; }
+        .pill.status-confirmed { background: #d1fae5; color: #065f46; }
+        .pill.status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 1.35rem;
+        }
+
+        .card p {
+            margin: 0 0 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .link {
+            color: var(--accent-dark);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .empty {
+            margin-top: 28px;
+            background: var(--panel);
+            border: 1px dashed var(--border);
+            border-radius: 24px;
+            padding: 34px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        @media (max-width: 720px) {
+            .hero {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <nav style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:18px">
+            {% if request.user.is_authenticated %}
+                <span style="align-self:center;color:var(--text)">Hi, <a class="link" href="{% url 'user:profile' %}">{{ request.user.get_full_name|default:request.user.username }}</a></span>
+                <a class="button" href="{% url 'user:logout' %}">Logout</a>
+            {% else %}
+                <a class="button" href="{% url 'user:login' %}">Login</a>
+                <a class="button" href="{% url 'user:register' %}">Register</a>
+            {% endif %}
+        </nav>
+        <section class="hero">
+            <div>
+                <p class="eyebrow">Reservations</p>
+                <h1>Reservation List</h1>
+                <p class="lead">Track which attendees are pending, confirmed, or cancelled for each event.</p>
+            </div>
+            <a class="button" href="{% url 'reservation:reservation_create' %}">Create Reservation</a>
+        </section>
+
+        {% if reservations %}
+            <section class="grid">
+                {% for reservation in reservations %}
+                    <article class="card">
+                        <div class="meta">
+                            <span class="pill">{{ reservation.event.title }}</span>
+                            <span class="pill status-{{ reservation.status }}">{{ reservation.get_status_display }}</span>
+                        </div>
+                        <h2>{{ reservation.attendee_name }}</h2>
+                        <p>{{ reservation.attendee_email }}</p>
+                        <p><strong>Event:</strong> {{ reservation.event }}</p>
+                        <div class="actions">
+                            <a class="link" href="{% url 'reservation:reservation_detail' reservation.pk %}">View details</a>
+                            <a class="link" href="{% url 'reservation:reservation_update' reservation.pk %}">Edit</a>
+                            <a class="link" href="{% url 'reservation:reservation_delete' reservation.pk %}">Delete</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <div class="empty">
+                <h2>No reservations yet</h2>
+                <p>Create the first reservation to get started.</p>
+                <a class="button" href="{% url 'reservation:reservation_create' %}">Add a reservation</a>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>

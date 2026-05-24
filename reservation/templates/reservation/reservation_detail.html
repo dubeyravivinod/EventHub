@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ reservation.attendee_name }}</title>
+    <style>
+        :root {
+            --bg: #f4efe8;
+            --panel: #fffaf3;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e7d8c6;
+            --accent: #0f766e;
+            --accent-dark: #115e59;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: radial-gradient(circle at top, #fff6ec 0%, #f4efe8 55%, #eaddcf 100%);
+            color: var(--text);
+        }
+
+        .page { max-width: 900px; margin: 0 auto; padding: 48px 20px 64px; }
+
+        .card {
+            background: rgba(255, 250, 243, 0.96);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 22px 50px rgba(73, 44, 17, 0.10);
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            font-size: 0.8rem;
+            margin: 0 0 12px;
+        }
+
+        h1 { margin: 0; font-size: clamp(2.2rem, 4vw, 3.6rem); line-height: 1; }
+
+        .meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 24px; }
+
+        .pill {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 7px 12px;
+            background: #e6fffb;
+            color: #115e59;
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .pill.status-pending { background: #fef3c7; color: #92400e; }
+        .pill.status-confirmed { background: #d1fae5; color: #065f46; }
+        .pill.status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+        .section { padding: 18px 0; border-top: 1px solid var(--border); }
+
+        .label {
+            margin: 0 0 6px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        p { margin: 0; line-height: 1.7; }
+
+        .muted { color: var(--muted); }
+
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid var(--accent);
+            color: white;
+            background: var(--accent);
+        }
+
+        .button.secondary { color: var(--accent-dark); background: transparent; }
+
+        .button:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: white; }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <nav style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:18px">
+            {% if request.user.is_authenticated %}
+                <span style="align-self:center;color:var(--text)">Hi, <a class="link" href="{% url 'user:profile' %}">{{ request.user.get_full_name|default:request.user.username }}</a></span>
+                <a class="button" href="{% url 'user:logout' %}">Logout</a>
+            {% else %}
+                <a class="button" href="{% url 'user:login' %}">Login</a>
+                <a class="button" href="{% url 'user:register' %}">Register</a>
+            {% endif %}
+        </nav>
+        <article class="card">
+            <p class="eyebrow">Reservation details</p>
+            <h1>{{ reservation.attendee_name }}</h1>
+
+            <div class="meta">
+                <span class="pill">{{ reservation.event }}</span>
+                <span class="pill status-{{ reservation.status }}">{{ reservation.get_status_display }}</span>
+                <span class="pill">{{ reservation.attendee_email }}</span>
+            </div>
+
+            <div class="section">
+                <p class="label">Attendee Email</p>
+                <p>{{ reservation.attendee_email }}</p>
+            </div>
+
+            <div class="section">
+                <p class="label">Event</p>
+                <p class="muted">{{ reservation.event }}</p>
+            </div>
+
+            <div class="actions">
+                <a class="button" href="{% url 'reservation:reservation_update' reservation.pk %}">Edit reservation</a>
+                <a class="button secondary" href="{% url 'reservation:reservation_list' %}">Back to reservations</a>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

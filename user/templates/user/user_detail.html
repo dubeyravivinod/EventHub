@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>User detail</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#fffafa;color:#111;margin:0;padding:24px}
+    .card{max-width:820px;margin:24px auto;padding:20px;border-radius:10px;background:#fff;border:1px solid #eee}
+    a.button{display:inline-block;padding:8px 12px;border-radius:8px;background:#036;color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>{{ profile.user.get_full_name|default:profile.user.username }}</h1>
+    <p>@{{ profile.user.username }}</p>
+
+    <section style="margin-top:16px">
+      <h3>About</h3>
+      <p>{{ profile.bio }}</p>
+    </section>
+
+    <div style="margin-top:18px">
+      <a class="button" href="{% url 'user:user_list' %}">Back to list</a>
+      {% if request.user == profile.user %}
+        <a class="button" style="margin-left:8px" href="{% url 'user:edit_profile' %}">Edit your profile</a>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>
